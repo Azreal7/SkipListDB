@@ -1,10 +1,16 @@
 #pragma once
+#define STORE_FILE "store/dumpfile"
 
 #include "Node.h"
 #include <random>
 #include <cstdlib>
 #include <iostream>
+#include <mutex>
 #include <cstring>
+#include <fstream>
+
+std::string delimiter = ":";
+std::mutex mtx;
 
 template <typename K, typename V>
 class SkipList {
@@ -16,11 +22,20 @@ public:
     bool search_element(K);
     void delete_element(K);
     void display_list();
+    void dump_file();
+    void load_file();
+
+private:
+    void get_key_value_from_string(const std::string& str, std::string* key, std::string* value);
+    bool is_valid_string(const std::string& str);
+
 private:
     int _max_level;
     int _skip_list_level;
     Node<K, V> *_header;
     int _element_count;
+    std::ofstream _file_writer;
+    std::ifstream _file_reader;
 };
 
 template <typename K, typename V>
@@ -31,6 +46,7 @@ Node<K, V> *SkipList<K, V>::create_node(const K k, const V v, int level) {
 
 template <typename K, typename V>
 int SkipList<K, V>::insert_element(const K key, const V value) {
+    std::lock_guard<std::mutex> lock(mtx);
     Node<K, V> *current = this->_header;
     Node<K, V> *update[_max_level + 1];
     memset(update, 0, sizeof(Node<K, V> *) * (_max_level + 1));
@@ -100,6 +116,7 @@ int SkipList<K, V>::get_random_level(){
 
 template<typename K, typename V>
 void SkipList<K, V>::delete_element(K key) {
+    std::lock_guard<std::mutex> lock(mtx);
     Node<K, V> *current = this->_header;
     Node<K, V> *update[_max_level + 1];
     memset(update, 0, sizeof(Node<K, V> *) * (_max_level + 1));
@@ -138,4 +155,54 @@ void SkipList<K, V>::display_list() {
         }
         std::cout << std::endl; // 当前层遍历结束，换行
     }
+}
+
+template<typename K, typename V>
+void SkipList<K, V>::dump_file() {
+    _file_writer.open(STORE_FILE);
+    Node<K, V>* node = this->_header->forward[0];
+
+    while(node != nullptr) {
+        _file_writer << node->get_key() << ":" << node->get_value() << ";\n";
+        node = node->forward[0];
+    }
+
+    _file_writer.flush();
+    _file_writer.close();
+}
+
+template <typename K, typename V>
+bool SkipList<K, V>::is_valid_string(const std::string& str) {
+    return !str.empty() && str.find(delimiter) != std::string::npos;
+}
+
+template <typename K, typename V>
+void SkipList<K, V>::get_key_value_from_string(const std::string& str, std::string* key, std::string* value) {
+    if (!is_valid_string(str)) {
+        return;
+    }
+    *key = str.substr(0, str.find(delimiter));
+    *value = str.substr(str.find(delimiter) + 1);
+}
+
+template <typename K, typename V>
+void SkipList<K, V>::load_file() {
+    _file_reader.open(STORE_FILE);
+    std::string line;
+    std::string *key = new std::string();
+    std::string *value = new std::string();
+
+    while (getline(_file_reader, line)) {
+        get_key_value_from_string(line, key, value);
+        if (key->empty() || value->empty()) {
+            continue;
+        }
+        // Define key as int type
+        insert_element(stoi(*key), stoi(*value));
+        std::cout << "key:" << *key << "value:" << *value << std::endl;
+    }
+
+    delete key;
+    delete value;
+    _file_reader.close();
 }

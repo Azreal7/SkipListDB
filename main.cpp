@@ -33,6 +33,12 @@ int main() {
         else if (inst == "display") {
             skip_list->display_list();
         }
+        else if (inst == "load") {
+            skip_list->load_file();
+        }
+        else if (inst == "dump") {
+            skip_list->dump_file();
+        }
         else {
             std::cout << "Wrong Instruction" << std::endl;
         }
