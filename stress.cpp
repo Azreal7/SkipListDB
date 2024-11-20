@@ -6,7 +6,7 @@
 #include <time.h>
 
 #define NUM_THREADS 1
-#define TEST_COUNT 1000000
+#define TEST_COUNT 850000
 SkipList<int, std::string> skipList(18);
 
 // 插入元素的线程函数
