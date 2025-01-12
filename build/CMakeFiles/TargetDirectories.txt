@@ -1,4 +1,0 @@
-/home/guoyi/projects/SkipList/build/CMakeFiles/rebuild_cache.dir
-/home/guoyi/projects/SkipList/build/CMakeFiles/edit_cache.dir
-/home/guoyi/projects/SkipList/build/CMakeFiles/stress_test.dir
-/home/guoyi/projects/SkipList/build/CMakeFiles/SkipList.dir

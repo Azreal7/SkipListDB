@@ -1,1 +1,0 @@
-/usr/bin/g++    -rdynamic CMakeFiles/stress_test.dir/stress.cpp.o  -o ../bin/stress_test 
